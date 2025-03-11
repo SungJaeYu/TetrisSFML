@@ -1,53 +1,54 @@
 #include "Game.h"
 #include <iostream>
 
+const float FALL_INTERVAL = 0.7f;
+
 void Game::initVariables()
 {
 	window = nullptr;
 	endGame = false;
+
 	health = 100;
 	points = 0;
+
+	// key check
 	leftPressed = false;
 	rightPressed = false;
 	downPressed = false;
 	spacePressed = false;
 	saveTriggered = false;
-
 }
 
 void Game::initWindow()
 {
 	// Set VideoMode Size
-	videoMode.size = sf::Vector2u(480, 720);
+	videoMode.size = sf::Vector2u(270, 720);
 
 	// Create Window
 	window = new sf::RenderWindow(videoMode, "Tetris", sf::Style::Titlebar | sf::Style::Close);
 
 	// controll framerate
 	window->setVerticalSyncEnabled(true); // call it once after creating the window
-	window->setFramerateLimit(60); // call it once after creating the window
+	window->setFramerateLimit(30); // call it once after creating the window
 }
 
 Game::Game()
 {
 	initVariables();
 	initWindow();
-	spawnBlock();
+	spawnTetromino();
 }
 
 Game::~Game()
 {
 	delete window;
-	for (auto& block : blocks) {
-		delete block;
-	}
 }
 
 void Game::render()
 {
 	window->clear();
 
-	renderBlocks();
+	renderTetromino();
 
 	window->display();
 }
@@ -56,7 +57,7 @@ void Game::update()
 {
 	pollEvents();
 
-	updateBlock();
+	updateTetromino();
 
 	clearLine();
 }
@@ -126,50 +127,65 @@ bool Game::isRunning()
 	return window->isOpen();
 }
 
-void Game::spawnBlock()
+void Game::spawnTetromino()
 {
 	//enemy.setPosition(
 	//	static_cast<float>(rand() % static_cast<int>(window->getSize().x - enemy.getSize().x)),
 	//	static_cast<float>(rand() % static_cast<int>(window->getSize().y - enemy.getSize().y))
 	//);
-	currentBlock = new sf::RectangleShape(sf::Vector2f(200.f, 100.f));
-	currentBlock->setPosition({ 100.f, 100.f });  // 위치 (300, 250)
-	currentBlock->setFillColor(sf::Color::Green);  // 색상 설정
-
-	blockSpawned = true;
-
+	currentTetromino = createTetromino();
+	currentTetromino->setPosition(4, 0);
 }
 
-void Game::updateBlock()
+void Game::updateTetromino()
 {
-	// If no moving block on screen
-	if (!blockSpawned) {
-		spawnBlock();
-	}
+	int dx = 0;
+	int dy = 0;
 
-	// moving down block
-	float moveSpeed = 1.f;
 	if (downPressed) {
-		moveSpeed *= 2;
+		dy += 1;
 	}
-
-	float direction = 0.f;
 	if (rightPressed) {
-		direction = 1.f;
+		dx += 1;
 	} 
 	if (leftPressed) {
-		direction = -1.f;
+		dx -= 1;
 	}
 
+	// 일정 시간마다 블록 자동 낙하
+	elapsedTime += clock.restart().asSeconds();
+	if (elapsedTime >= FALL_INTERVAL) {
+		dy += 1;
+		elapsedTime = 0.f;  // 타이머 초기화
+	}
+
+	// get position
+	sf::Vector2i currentPosition = currentTetromino->getPosition();
+	
+	int newPositionX = currentPosition.x + dx;
+	int newPositionY = currentPosition.y + dy;
+
+	if (newPositionX >= 8) {
+		newPositionX = 8;
+	}
+	else if (newPositionX <= 0) {
+		newPositionX = 0;
+	}
+
+
 	// moving down block
-	currentBlock->move({ direction, moveSpeed });
+	currentTetromino->setPosition(newPositionX, newPositionY);
 
 	// if block can't move, stop block
 	// if (block cant'move) {
-	auto position = currentBlock->getPosition();
-	if (position.y >= 500.f) {
-		blocks.push_back(currentBlock);
-		blockSpawned = false;
+	if (newPositionY >= 22) {
+		for (auto& block : currentTetromino->getBlocks()) {
+			blocks.emplace_back(block);
+		}
+
+		delete currentTetromino;
+
+		spawnTetromino();
 	}
 	// save
 	// if (saveTriggered) {
@@ -186,11 +202,11 @@ void Game::clearLine()
 	// if line is full, clear line
 }
 
-void Game::renderBlocks()
+void Game::renderTetromino()
 {
-	window->draw(*currentBlock);
+	currentTetromino->draw(*window);
 
 	for (auto& block : blocks) {
-		window->draw(*block);
+		window->draw(block);
 	}
 } 

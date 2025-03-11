@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Tetromino.h"
 
 class Game
 {
@@ -15,21 +16,21 @@ public:
 	void pollEvents();
 	bool isRunning();
 
-	void spawnBlock();
-	void updateBlock();
+	void spawnTetromino();
+	void updateTetromino();
 	void clearLine();
-	void renderBlocks();
+	void renderTetromino();
 
 
 private:
 	sf::RenderWindow* window;
 	sf::VideoMode videoMode;
 	sf::Clock clock;
-	sf::Vector2i mousePosWindow;
-	sf::Vector2f mousePosView;
-	
-	sf::RectangleShape* currentBlock;
-	std::vector<sf::RectangleShape*> blocks;
+	float elapsedTime = 0.f;
+
+	Tetromino* currentTetromino;
+	std::vector<Tetromino> tetrominoes;
+	std::vector<sf::RectangleShape> blocks;
 
 	int points;
 	bool endGame;
@@ -42,6 +43,4 @@ private:
 
 	bool saveTriggered;
 	bool blockSpawned;
-
-	sf::RectangleShape enemy;
 };
