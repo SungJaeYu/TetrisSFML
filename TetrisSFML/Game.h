@@ -6,7 +6,6 @@ class Game
 private:
 	void initVariables();
 	void initWindow();
-	void initEnemies();
 public:
 	Game();
 	~Game();
@@ -14,11 +13,11 @@ public:
 	void render();
 	void update();
 	void pollEvents();
-	void updateMousePosition();
 	bool isRunning();
 
 	void spawnBlock();
-	void updateBlocks();
+	void updateBlock();
+	void clearLine();
 	void renderBlocks();
 
 
@@ -28,15 +27,21 @@ private:
 	sf::Clock clock;
 	sf::Vector2i mousePosWindow;
 	sf::Vector2f mousePosView;
+	
+	sf::RectangleShape* currentBlock;
+	std::vector<sf::RectangleShape*> blocks;
 
-	std::vector<sf::RectangleShape> enemies;
 	int points;
-	float enemySpawnTimer;
-	float enemySpawnTimerMax;
-	int maxEnemies;
-	bool mouseHeld;
 	bool endGame;
 	bool health;
+
+	bool downPressed;
+	bool leftPressed;
+	bool rightPressed;
+	bool spacePressed;
+
+	bool saveTriggered;
+	bool blockSpawned;
 
 	sf::RectangleShape enemy;
 };
