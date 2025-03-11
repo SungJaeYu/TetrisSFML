@@ -45,6 +45,7 @@ Game::Game()
 Game::~Game()
 {
 	delete window;
+	delete currentTetromino;
 }
 
 void Game::render()
@@ -210,6 +211,19 @@ void Game::updateTetromino()
 void Game::clearLine()
 {
 	// if line is full, clear line
+	for (int i = 0; i < ROWS; ++i) {
+		bool isFull = true;
+		for (int j = 0; j < COLS; ++j) {
+			if (gameBoard[i][j] == 0) {
+				isFull = false;
+				break;
+			}
+		}
+		if (isFull) {
+			// remove line
+			
+		}
+	}
 }
 
 void Game::renderTetromino()
