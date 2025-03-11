@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Tetromino.h"
+const int ROWS = 20;
+const int COLS = 10;
 
 class Game
 {
@@ -21,12 +23,14 @@ public:
 	void clearLine();
 	void renderTetromino();
 
+	bool checkCollision(int x, int y);
 
 private:
 	sf::RenderWindow* window;
 	sf::VideoMode videoMode;
 	sf::Clock clock;
 	float elapsedTime = 0.f;
+	int gameBoard[ROWS][COLS] = { 0 };  // 0: ºó Ä­, 1: ºí·ÏÀÌ ÀÖ´Â Ä­
 
 	Tetromino* currentTetromino;
 	std::vector<Tetromino> tetrominoes;
@@ -34,7 +38,7 @@ private:
 
 	int points;
 	bool endGame;
-	bool health;
+	int health;
 
 	bool downPressed;
 	bool leftPressed;

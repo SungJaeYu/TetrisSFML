@@ -10,6 +10,8 @@ public:
     std::vector<sf::RectangleShape> getBlocks();
     void draw(sf::RenderWindow& window);
     sf::Vector2i getSize();
+    void move(int dx, int dy);
+    std::vector<sf::Vector2i> getShape();
 private:
     std::vector<sf::Vector2i> shape;  // 블록을 이루는 셀들의 상대 좌표
     sf::Color color;

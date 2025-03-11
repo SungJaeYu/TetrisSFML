@@ -3,6 +3,9 @@
 
 const float FALL_INTERVAL = 0.7f;
 
+const int BLOCK_SIZE = 30;
+
+
 void Game::initVariables()
 {
 	window = nullptr;
@@ -22,12 +25,12 @@ void Game::initVariables()
 void Game::initWindow()
 {
 	// Set VideoMode Size
-	videoMode.size = sf::Vector2u(270, 720);
+	videoMode.size = sf::Vector2u(COLS * BLOCK_SIZE, ROWS * BLOCK_SIZE);
 
 	// Create Window
 	window = new sf::RenderWindow(videoMode, "Tetris", sf::Style::Titlebar | sf::Style::Close);
 
-	// controll framerate
+	// controll framerat
 	window->setVerticalSyncEnabled(true); // call it once after creating the window
 	window->setFramerateLimit(30); // call it once after creating the window
 }
@@ -142,54 +145,30 @@ void Game::updateTetromino()
 	int dx = 0;
 	int dy = 0;
 
-	if (downPressed) {
-		dy += 1;
-	}
-	if (rightPressed) {
+	if (rightPressed && !checkCollision(1, 0)) {
 		dx += 1;
 	} 
-	if (leftPressed) {
+	if (leftPressed && !checkCollision(-1, 0)) {
 		dx -= 1;
 	}
 
+	bool stopped = false;
+	if (downPressed && !checkCollision(0, 1)) {
+		dy += 1;
+	}
 	// 일정 시간마다 블록 자동 낙하
 	elapsedTime += clock.restart().asSeconds();
 	if (elapsedTime >= FALL_INTERVAL) {
-		dy += 1;
+		if (!checkCollision(0, 1)) {
+			dy += 1;
+		}
 		elapsedTime = 0.f;  // 타이머 초기화
-	}
-
-	// get position
-	sf::Vector2i currentPosition = currentTetromino->getPosition();
-	
-	int newPositionX = currentPosition.x + dx;
-	int newPositionY = currentPosition.y + dy;
-
-	sf::Vector2i size = currentTetromino->getSize();
-
-
-	if (newPositionX + size.x >= 8) {
-		newPositionX = 8 - size.x;
-	}
-	else if (newPositionX <= 0) {
-		newPositionX = 0;
 	}
 
 
 	// moving down block
-	currentTetromino->setPosition(newPositionX, newPositionY);
+	currentTetromino->move(dx, dy);
 
-	// if block can't move, stop block
-	// if (block cant'move) {
-	if (newPositionY + size.y >= 23) {
-		for (auto& block : currentTetromino->getBlocks()) {
-			blocks.emplace_back(block);
-		}
-
-		delete currentTetromino;
-
-		spawnTetromino();
-	}
 	// save
 	// if (saveTriggered) {
 	//	   sf::RectangleShape* temp = &currentBlock;
@@ -198,6 +177,26 @@ void Game::updateTetromino()
 	//     }
 	//     saveBlock = *temp;
 	//     currentBlock.setPosition({0,0f, 0,0f})
+
+
+	// if block can't move, stop block
+	if (checkCollision(0, 1)) {
+		for (auto& block : currentTetromino->getBlocks()) {
+			blocks.emplace_back(block);
+		}
+
+		std::vector<sf::Vector2i> shape = currentTetromino->getShape();
+		sf::Vector2i pos = currentTetromino->getPosition();
+
+		for (int i = 0; i < 4; ++i) {
+			gameBoard[shape[i].y + pos.y][shape[i].x + pos.x] = 1;
+		}
+
+		delete currentTetromino;
+
+		spawnTetromino();
+	}
+
 }
 
 void Game::clearLine()
@@ -212,4 +211,32 @@ void Game::renderTetromino()
 	for (auto& block : blocks) {
 		window->draw(block);
 	}
-} 
+}
+bool Game::checkCollision(int dx, int dy)
+{
+	// get position
+	sf::Vector2i currentPosition = currentTetromino->getPosition();
+	sf::Vector2i size = currentTetromino->getSize();
+
+	int newPositionX = currentPosition.x + dx;
+	int newPositionY = currentPosition.y + dy;
+
+
+	if (newPositionX < 0 || newPositionX + size.x > COLS) {
+		return true;
+	}
+	
+	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
+
+	for (int i = 0; i < 4; ++i) {
+		if (newPositionY + shape[i].y > ROWS) {
+			return true;
+		}
+		if (gameBoard[newPositionY + shape[i].y][newPositionX + shape[i].x]) {
+			return true;
+		}
+	}
+	return false;
+
+	
+}

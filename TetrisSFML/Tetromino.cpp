@@ -66,3 +66,13 @@ sf::Vector2i Tetromino::getSize()
 {
 	return sf::Vector2i(width, height);
 }
+
+void Tetromino::move(int dx, int dy)
+{
+	setPosition(currentPosition.x + dx, currentPosition.y + dy);
+}
+
+std::vector<sf::Vector2i> Tetromino::getShape()
+{
+	return shape;
+}
