@@ -142,34 +142,30 @@ void Game::spawnTetromino()
 
 void Game::updateTetromino()
 {
-	int dx = 0;
-	int dy = 0;
-
+	// Key Move Right
 	if (rightPressed && !checkCollision(1, 0)) {
-		dx += 1;
+		currentTetromino->move(1, 0);
 	} 
+
+	// Key Move Left
 	if (leftPressed && !checkCollision(-1, 0)) {
-		dx -= 1;
+		currentTetromino->move(-1, 0);
+	}
+	// Key Move Down
+	if (downPressed && !checkCollision(0, 1)) {
+		currentTetromino->move(0, 1);
 	}
 
-	bool stopped = false;
-	if (downPressed && !checkCollision(0, 1)) {
-		dy += 1;
-	}
-	// 일정 시간마다 블록 자동 낙하
+	// Check Fall interval and Move Down
 	elapsedTime += clock.restart().asSeconds();
 	if (elapsedTime >= FALL_INTERVAL) {
 		if (!checkCollision(0, 1)) {
-			dy += 1;
+			currentTetromino->move(0, 1);
 		}
-		elapsedTime = 0.f;  // 타이머 초기화
+		elapsedTime = 0.f;  // Reset Timer
 	}
 
-
-	// moving down block
-	currentTetromino->move(dx, dy);
-
-	// save
+	// TODO : Save Tetromino
 	// if (saveTriggered) {
 	//	   sf::RectangleShape* temp = &currentBlock;
 	//     if (saveBlock) {
@@ -195,7 +191,19 @@ void Game::updateTetromino()
 		delete currentTetromino;
 
 		spawnTetromino();
+
+		// For Debug
+		printf("\n");
+		for (int i = 0; i < ROWS; ++i) {
+			for (int j = 0; j < COLS; ++j) {
+				printf("%d", gameBoard[i][j]);
+			}
+			printf("\n");
+		}
+		printf("\n");
 	}
+
+
 
 }
 
@@ -222,14 +230,14 @@ bool Game::checkCollision(int dx, int dy)
 	int newPositionY = currentPosition.y + dy;
 
 
-	if (newPositionX < 0 || newPositionX + size.x > COLS) {
+	if (newPositionX < 0 || newPositionX + size.x >= COLS) {
 		return true;
 	}
 	
 	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
 
 	for (int i = 0; i < 4; ++i) {
-		if (newPositionY + shape[i].y > ROWS) {
+		if (newPositionY + shape[i].y >= ROWS) {
 			return true;
 		}
 		if (gameBoard[newPositionY + shape[i].y][newPositionX + shape[i].x]) {
