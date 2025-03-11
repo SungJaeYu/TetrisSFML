@@ -165,8 +165,11 @@ void Game::updateTetromino()
 	int newPositionX = currentPosition.x + dx;
 	int newPositionY = currentPosition.y + dy;
 
-	if (newPositionX >= 8) {
-		newPositionX = 8;
+	sf::Vector2i size = currentTetromino->getSize();
+
+
+	if (newPositionX + size.x >= 8) {
+		newPositionX = 8 - size.x;
 	}
 	else if (newPositionX <= 0) {
 		newPositionX = 0;
@@ -178,7 +181,7 @@ void Game::updateTetromino()
 
 	// if block can't move, stop block
 	// if (block cant'move) {
-	if (newPositionY >= 22) {
+	if (newPositionY + size.y >= 23) {
 		for (auto& block : currentTetromino->getBlocks()) {
 			blocks.emplace_back(block);
 		}

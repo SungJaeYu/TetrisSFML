@@ -9,11 +9,14 @@ public:
     sf::Vector2i getPosition();
     std::vector<sf::RectangleShape> getBlocks();
     void draw(sf::RenderWindow& window);
+    sf::Vector2i getSize();
 private:
     std::vector<sf::Vector2i> shape;  // 블록을 이루는 셀들의 상대 좌표
     sf::Color color;
     sf::RectangleShape blocks[4];  // 블록을 구성하는 4개의 정사각형
     sf::Vector2i currentPosition;
+    int width;
+    int height;
 };
 
 Tetromino* createTetromino();

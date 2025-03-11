@@ -24,6 +24,9 @@ Tetromino::Tetromino(std::vector<sf::Vector2i> s, sf::Color c)
 	for (int i = 0; i < 4; ++i) {
 		blocks[i].setSize(sf::Vector2f(BLOCK_SIZE - 2, BLOCK_SIZE - 2));  // 테두리 효과
 		blocks[i].setFillColor(color);
+
+		width = std::max(shape[i].x, width);
+		height = std::max(shape[i].y, height);
 	}
 }
 
@@ -57,4 +60,9 @@ void Tetromino::draw(sf::RenderWindow& window)
 	for (auto& block : blocks) {
 		window.draw(block);
 	}
+}
+
+sf::Vector2i Tetromino::getSize()
+{
+	return sf::Vector2i(width, height);
 }
