@@ -8,6 +8,7 @@ class Game
 private:
 	void initVariables();
 	void initWindow();
+	void initText();
 
 public:
 	Game();
@@ -19,10 +20,20 @@ public:
 
 private:
 	void spawnTetromino();
+	void left();
+	void right();
+	void down();
+	void rotate();
+
 	void updateTetromino();
+
 	void renderTetromino();
+	void renderBoard();
+	void renderTexts();
+
 	bool checkCollisionHorizontal(int dx);
 	bool checkCollisionVertical(int dy);
+	bool checkCollisionCurrent();
 
 private:
 	sf::RenderWindow* window;
@@ -31,18 +42,10 @@ private:
 	float elapsedTime = 0.f;
 	Board board;
 	Tetromino* currentTetromino;
-	std::vector<Tetromino> tetrominoes;
-	std::vector<sf::RectangleShape> blocks;
+	sf::Font font;
+	sf::Text* text;
 
-	int points;
+
+	int score;
 	bool endGame;
-	int health;
-
-	bool downPressed;
-	bool leftPressed;
-	bool rightPressed;
-	bool spacePressed;
-
-	bool saveTriggered;
-	bool blockSpawned;
 };

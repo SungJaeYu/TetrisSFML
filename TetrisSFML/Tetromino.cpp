@@ -24,8 +24,6 @@ Tetromino::Tetromino(std::vector<sf::Vector2i> s, sf::Color c)
 		blocks[i].setSize(sf::Vector2f(BLOCK_SIZE - 2, BLOCK_SIZE - 2));  // 테두리 효과
 		blocks[i].setFillColor(color);
 	}
-
-	updateSize();
 }
 
 void Tetromino::draw(sf::RenderWindow& window)
@@ -40,7 +38,7 @@ void Tetromino::move(int dx, int dy)
 	setPosition(currentPosition.x + dx, currentPosition.y + dy);
 }
 
-void Tetromino::rotate()
+void Tetromino::rotateCW()
 {
 	std::vector<sf::Vector2i> newShape;
 
@@ -52,9 +50,20 @@ void Tetromino::rotate()
 	}
 
 	shape = newShape;
+}
 
-	updateSize();
-	
+void Tetromino::rotateCCW()
+{
+	std::vector<sf::Vector2i> newShape;
+
+	for (int i = 0; i < 4; ++i) {
+		int tempX = shape[i].x - 1;
+		int tempY = shape[i].y;
+
+		newShape.push_back(sf::Vector2i(tempY + 1, tempX));
+	}
+
+	shape = newShape;
 }
 
 void Tetromino::setPosition(int x, int y)
@@ -87,24 +96,7 @@ sf::Color Tetromino::getColor()
 	return color;
 }
 
-
-sf::Vector2i Tetromino::getSize()
-{
-	return sf::Vector2i(width, height);
-}
-
 std::vector<sf::Vector2i> Tetromino::getShape()
 {
 	return shape;
-}
-
-void Tetromino::updateSize()
-{
-	width = 0;
-	height = 0;
-
-	for (int i = 0; i < 4; ++i) {
-		width = std::max(shape[i].x, width);
-		height = std::max(shape[i].y, height);
-	}
 }

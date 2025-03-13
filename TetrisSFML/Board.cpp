@@ -8,7 +8,7 @@ bool Board::isEmpty(int x, int y)
 	return true;
 }
 
-void Board::addTetromino(Tetromino& tetromino)
+int Board::addTetromino(Tetromino& tetromino)
 {
 	std::vector<sf::Vector2i> shape = tetromino.getShape();
 	sf::Vector2i pos = tetromino.getPosition();
@@ -18,7 +18,7 @@ void Board::addTetromino(Tetromino& tetromino)
 		addBlock(shape[i].x + pos.x, shape[i].y + pos.y, color);
 	}
 
-	clearLine();
+	return clearLine();
 }
 
 void Board::draw(sf::RenderWindow& window)
@@ -30,22 +30,6 @@ void Board::draw(sf::RenderWindow& window)
 			}
 		}
 	}
-}
-
-void Board::debugPrint()
-{
-	for (int i = 0; i < ROWS; ++i) {
-		for (int j = 0; j < COLS; ++j) {
-			if (board[i][j]) {
-				printf("O");
-			}
-			else {
-				printf("X");
-			}
-		}
-		printf("\n");
-	}
-	printf("\n\n");
 }
 
 void Board::addBlock(int x, int y, sf::Color color)
@@ -65,8 +49,9 @@ void Board::downBlock(int x, int y)
 	}
 }
 
-void Board::clearLine()
+int Board::clearLine()
 {
+	int removedLines = 0;
 	int i = ROWS - 1;
 
 	while (i >= 0) {
@@ -79,6 +64,7 @@ void Board::clearLine()
 		}
 
 		if (isFull) {
+			++removedLines;
 			for (int j = 0; j < COLS; ++j) {
 				board[i][j].reset();
 			}
@@ -92,8 +78,26 @@ void Board::clearLine()
 		else {
 			--i;
 		}
-
-
 	}
 
+
+	return removedLines;
 }
+
+#ifndef NDEBUG
+void Board::debugPrint()
+{
+	for (int i = 0; i < ROWS; ++i) {
+		for (int j = 0; j < COLS; ++j) {
+			if (board[i][j]) {
+				printf("O");
+			}
+			else {
+				printf("X");
+			}
+		}
+		printf("\n");
+	}
+	printf("\n\n");
+}
+#endif

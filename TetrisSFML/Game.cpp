@@ -7,16 +7,7 @@ void Game::initVariables()
 {
 	window = nullptr;
 	endGame = false;
-
-	health = 100;
-	points = 0;
-
-	// key check
-	leftPressed = false;
-	rightPressed = false;
-	downPressed = false;
-	spacePressed = false;
-	saveTriggered = false;
+	score = 0;
 }
 
 void Game::initWindow()
@@ -29,12 +20,26 @@ void Game::initWindow()
 
 	// controll framerat
 	window->setVerticalSyncEnabled(true); // call it once after creating the window
-	window->setFramerateLimit(30); // call it once after creating the window
+	window->setFramerateLimit(60); // call it once after creating the window
+}
+
+void Game::initText()
+{
+	if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
+		endGame = true;
+		return;
+	}
+	text = new sf::Text(font);
+	text->setString("SCORE : " + std::to_string(score));    // 출력할 텍스트
+	text->setCharacterSize(20);         // 글자 크기
+	text->setFillColor(sf::Color::White); // 글자 색상
+	text->setPosition({ BLOCK_SIZE * COLS - 100, BLOCK_SIZE });        // 위치 조정
 }
 
 Game::Game()
 {
 	initVariables();
+	initText();
 	initWindow();
 	spawnTetromino();
 }
@@ -43,6 +48,7 @@ Game::~Game()
 {
 	delete window;
 	delete currentTetromino;
+	delete text;
 }
 
 void Game::render()
@@ -51,7 +57,9 @@ void Game::render()
 
 	renderTetromino();
 
-	board.draw(*window);
+	renderBoard();
+
+	renderTexts();
 
 	window->display();
 }
@@ -76,82 +84,100 @@ void Game::pollEvents()
 				window->close();
 				break;
 			case sf::Keyboard::Scancode::Space:
-				// Rotate
-				spacePressed = true;
+				rotate();
 				break;
 			case sf::Keyboard::Scancode::Down:
-				// Fast Down
-				downPressed = true;
+				down();
 				break;
 			case sf::Keyboard::Scancode::Left:
-				// Left
-				leftPressed = true;
+				left();
 				break;
 			case sf::Keyboard::Scancode::Right:
-				// Right
-				rightPressed = true;
+				right();
 				break;
 			default:
 				break;
 			}
 		}
-		else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
-			switch (keyReleased->scancode) {
-			case sf::Keyboard::Scancode::Space:
-				// TODO: Save
-				spacePressed = false;
-				break;
-			case sf::Keyboard::Scancode::Down:
-				// Fast Down
-				downPressed = false;
-				break;
-			case sf::Keyboard::Scancode::Left:
-				leftPressed = false;
-				// Left
-				break;
-			case sf::Keyboard::Scancode::Right:
-				rightPressed = false;
-				// Right
-				break;
-			default:
-				break;
-			}
-		}
+		//else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
+		//	switch (keyReleased->scancode) {
+		//	case sf::Keyboard::Scancode::Space:
+		//		// TODO: Save
+		//		spacePressed = false;
+		//		break;
+		//	case sf::Keyboard::Scancode::Down:
+		//		// Fast Down
+		//		downPressed = false;
+		//		break;
+		//	case sf::Keyboard::Scancode::Left:
+		//		leftPressed = false;
+		//		// Left
+		//		break;
+		//	case sf::Keyboard::Scancode::Right:
+		//		rightPressed = false;
+		//		// Right
+		//		break;
+		//	default:
+		//		break;
+		//	}
+		//}
 	}
 }
 
 bool Game::isRunning()
 {
-	return window->isOpen();
+	return !endGame;
 }
 
 void Game::spawnTetromino()
 {
 	currentTetromino = createTetromino();
+
+	// spawn base position
 	currentTetromino->setPosition(4, 0);
+
+	if (checkCollisionCurrent()) {
+		endGame = true;
+	}
+}
+
+void Game::left()
+{
+	// Key Move Left
+	if (!checkCollisionHorizontal(-1)) {
+		currentTetromino->move(-1, 0);
+	}
+}
+
+void Game::right()
+{
+	// Key Move Right
+	if (!checkCollisionHorizontal(1)) {
+		currentTetromino->move(1, 0);
+	}
+}
+
+void Game::down()
+{
+	// Key Move Down
+	if (!checkCollisionVertical(1)) {
+		currentTetromino->move(0, 1);
+	}
+}
+
+void Game::rotate()
+{
+	// Key Rotate Space
+	currentTetromino->rotateCW();
+
+	// If Collision Rotate Back
+	if (checkCollisionCurrent()) {
+		currentTetromino->rotateCCW();
+	}
 }
 
 void Game::updateTetromino()
 {
-	// Key Rotate Space
-	if (spacePressed) {
-		currentTetromino->rotate();
-	}
-
-	// Key Move Right
-	if (rightPressed && !checkCollisionHorizontal(1)) {
-		currentTetromino->move(1, 0);
-	} 
-
-	// Key Move Left
-	if (leftPressed && !checkCollisionHorizontal(-1)) {
-		currentTetromino->move(-1, 0);
-	}
-	// Key Move Down
-	if (downPressed && !checkCollisionVertical(1)) {
-		currentTetromino->move(0, 1);
-	}
-
 	// Check Fall interval and Move Down
 	elapsedTime += clock.restart().asSeconds();
 	if (elapsedTime >= FALL_INTERVAL) {
@@ -164,7 +190,7 @@ void Game::updateTetromino()
 	// if block can't move, stop block
 	if (checkCollisionVertical(1)) {
 		
-		board.addTetromino(*currentTetromino);
+		score += board.addTetromino(*currentTetromino);
 
 		delete currentTetromino;
 
@@ -177,6 +203,16 @@ void Game::updateTetromino()
 void Game::renderTetromino()
 {
 	currentTetromino->draw(*window);
+}
+
+void Game::renderBoard()
+{
+	board.draw(*window);
+}
+
+void Game::renderTexts()
+{
+	window->draw(*text);
 }
 
 bool Game::checkCollisionHorizontal(int dx)
@@ -214,6 +250,28 @@ bool Game::checkCollisionVertical(int dy)
 		}
 
 		if (!board.isEmpty(currentPosition.x + shape[i].x, newPositionY + shape[i].y)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Game::checkCollisionCurrent()
+{
+	// get position and shape
+	sf::Vector2i currentPosition = currentTetromino->getPosition();
+	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
+
+	for (int i = 0; i < 4; ++i) {
+		if (currentPosition.x + shape[i].x < 0 || currentPosition.x + shape[i].x >= COLS) {
+			return true;
+		}
+
+		if (currentPosition.y + shape[i].y >= ROWS) {
+			return true;
+		}
+
+		if (!board.isEmpty(currentPosition.x + shape[i].x, currentPosition.y + shape[i].y)) {
 			return true;
 		}
 	}
