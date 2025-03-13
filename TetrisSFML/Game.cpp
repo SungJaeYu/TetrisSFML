@@ -3,9 +3,6 @@
 
 const float FALL_INTERVAL = 0.7f;
 
-const int BLOCK_SIZE = 30;
-
-
 void Game::initVariables()
 {
 	window = nullptr;
@@ -54,6 +51,8 @@ void Game::render()
 
 	renderTetromino();
 
+	board.draw(*window);
+
 	window->display();
 }
 
@@ -62,8 +61,6 @@ void Game::update()
 	pollEvents();
 
 	updateTetromino();
-
-	clearLine();
 }
 
 void Game::pollEvents()
@@ -133,10 +130,6 @@ bool Game::isRunning()
 
 void Game::spawnTetromino()
 {
-	//enemy.setPosition(
-	//	static_cast<float>(rand() % static_cast<int>(window->getSize().x - enemy.getSize().x)),
-	//	static_cast<float>(rand() % static_cast<int>(window->getSize().y - enemy.getSize().y))
-	//);
 	currentTetromino = createTetromino();
 	currentTetromino->setPosition(4, 0);
 }
@@ -144,23 +137,23 @@ void Game::spawnTetromino()
 void Game::updateTetromino()
 {
 	// Key Move Right
-	if (rightPressed && !checkCollision(1, 0)) {
+	if (rightPressed && !checkCollisionHorizontal(1)) {
 		currentTetromino->move(1, 0);
 	} 
 
 	// Key Move Left
-	if (leftPressed && !checkCollision(-1, 0)) {
+	if (leftPressed && !checkCollisionHorizontal(-1)) {
 		currentTetromino->move(-1, 0);
 	}
 	// Key Move Down
-	if (downPressed && !checkCollision(0, 1)) {
+	if (downPressed && !checkCollisionVertical(1)) {
 		currentTetromino->move(0, 1);
 	}
 
 	// Check Fall interval and Move Down
 	elapsedTime += clock.restart().asSeconds();
 	if (elapsedTime >= FALL_INTERVAL) {
-		if (!checkCollision(0, 1)) {
+		if (!checkCollisionVertical(1)) {
 			currentTetromino->move(0, 1);
 		}
 		elapsedTime = 0.f;  // Reset Timer
@@ -177,88 +170,64 @@ void Game::updateTetromino()
 
 
 	// if block can't move, stop block
-	if (checkCollision(0, 1)) {
-		for (auto& block : currentTetromino->getBlocks()) {
-			blocks.emplace_back(block);
-		}
-
-		std::vector<sf::Vector2i> shape = currentTetromino->getShape();
-		sf::Vector2i pos = currentTetromino->getPosition();
-
-		for (int i = 0; i < 4; ++i) {
-			gameBoard[shape[i].y + pos.y][shape[i].x + pos.x] = 1;
-		}
+	if (checkCollisionVertical(1)) {
+		
+		board.addTetromino(*currentTetromino);
 
 		delete currentTetromino;
 
 		spawnTetromino();
 
-		// For Debug
-		printf("\n");
-		for (int i = 0; i < ROWS; ++i) {
-			for (int j = 0; j < COLS; ++j) {
-				printf("%d", gameBoard[i][j]);
-			}
-			printf("\n");
-		}
-		printf("\n");
-	}
-
-
-
-}
-
-void Game::clearLine()
-{
-	// if line is full, clear line
-	for (int i = 0; i < ROWS; ++i) {
-		bool isFull = true;
-		for (int j = 0; j < COLS; ++j) {
-			if (gameBoard[i][j] == 0) {
-				isFull = false;
-				break;
-			}
-		}
-		if (isFull) {
-			// remove line
-			
-		}
+		board.debugPrint();
 	}
 }
 
 void Game::renderTetromino()
 {
 	currentTetromino->draw(*window);
-
-	for (auto& block : blocks) {
-		window->draw(block);
-	}
 }
-bool Game::checkCollision(int dx, int dy)
+
+bool Game::checkCollisionHorizontal(int dx)
 {
 	// get position
 	sf::Vector2i currentPosition = currentTetromino->getPosition();
 	sf::Vector2i size = currentTetromino->getSize();
 
 	int newPositionX = currentPosition.x + dx;
-	int newPositionY = currentPosition.y + dy;
 
 
 	if (newPositionX < 0 || newPositionX + size.x >= COLS) {
 		return true;
 	}
-	
+
 	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
 
 	for (int i = 0; i < 4; ++i) {
-		if (newPositionY + shape[i].y >= ROWS) {
-			return true;
-		}
-		if (gameBoard[newPositionY + shape[i].y][newPositionX + shape[i].x]) {
+		if (!board.isEmpty(newPositionX + shape[i].x, currentPosition.y + shape[i].y)) {
 			return true;
 		}
 	}
 	return false;
+}
 
-	
+bool Game::checkCollisionVertical(int dy)
+{
+	// get position
+	sf::Vector2i currentPosition = currentTetromino->getPosition();
+	sf::Vector2i size = currentTetromino->getSize();
+
+	int newPositionY = currentPosition.y + dy;
+
+	if (newPositionY + size.y >= ROWS) {
+		return true;
+	}
+
+	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
+
+	for (int i = 0; i < 4; ++i) {
+		if (!board.isEmpty(currentPosition.x + shape[i].x, newPositionY + shape[i].y)) {
+			return true;
+		}
+	}
+	return false;
 }

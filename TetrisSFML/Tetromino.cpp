@@ -1,6 +1,5 @@
 #include "Tetromino.h"
 
-const int BLOCK_SIZE = 30;
 
 Tetromino tetrominoes[7] = {
 		Tetromino({{0,0}, {1,0}, {2,0}, {3,0}}, sf::Color::Cyan),  // I ºí·Ï
@@ -53,6 +52,11 @@ std::vector<sf::RectangleShape> Tetromino::getBlocks()
 		outputBlocks.push_back(block);
 	}
 	return outputBlocks;
+}
+
+sf::Color Tetromino::getColor()
+{
+	return color;
 }
 
 void Tetromino::draw(sf::RenderWindow& window)

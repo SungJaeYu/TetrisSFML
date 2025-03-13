@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
+#define BLOCK_SIZE 30
+
 class Tetromino
 {
 public:
@@ -8,6 +10,7 @@ public:
     void setPosition(int x, int y);
     sf::Vector2i getPosition();
     std::vector<sf::RectangleShape> getBlocks();
+    sf::Color getColor();
     void draw(sf::RenderWindow& window);
     sf::Vector2i getSize();
     void move(int dx, int dy);

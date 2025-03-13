@@ -1,37 +1,35 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Tetromino.h"
-const int ROWS = 20;
-const int COLS = 10;
+#include "Board.h"
 
 class Game
 {
 private:
 	void initVariables();
 	void initWindow();
+
 public:
 	Game();
 	~Game();
-
 	void render();
 	void update();
 	void pollEvents();
 	bool isRunning();
 
+private:
 	void spawnTetromino();
 	void updateTetromino();
-	void clearLine();
 	void renderTetromino();
-
-	bool checkCollision(int x, int y);
+	bool checkCollisionHorizontal(int dx);
+	bool checkCollisionVertical(int dy);
 
 private:
 	sf::RenderWindow* window;
 	sf::VideoMode videoMode;
 	sf::Clock clock;
 	float elapsedTime = 0.f;
-	int gameBoard[ROWS][COLS] = { 0 };  // 0: ºó Ä­, 1: ºí·ÏÀÌ ÀÖ´Â Ä­
-
+	Board board;
 	Tetromino* currentTetromino;
 	std::vector<Tetromino> tetrominoes;
 	std::vector<sf::RectangleShape> blocks;
