@@ -16,6 +16,7 @@ public:
 #endif
 private:
 	void addBlock(int x, int y, sf::Color color);
+	void downBlock(int x, int y);
 	void clearLine();
 private:
 	std::optional<sf::RectangleShape> board[ROWS][COLS];

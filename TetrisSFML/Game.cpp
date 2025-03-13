@@ -76,10 +76,7 @@ void Game::pollEvents()
 				window->close();
 				break;
 			case sf::Keyboard::Scancode::Space:
-				// Save
-				if (spacePressed == false) {
-					saveTriggered = true;
-				}
+				// Rotate
 				spacePressed = true;
 				break;
 			case sf::Keyboard::Scancode::Down:
@@ -136,6 +133,11 @@ void Game::spawnTetromino()
 
 void Game::updateTetromino()
 {
+	// Key Rotate Space
+	if (spacePressed) {
+		currentTetromino->rotate();
+	}
+
 	// Key Move Right
 	if (rightPressed && !checkCollisionHorizontal(1)) {
 		currentTetromino->move(1, 0);
@@ -159,16 +161,6 @@ void Game::updateTetromino()
 		elapsedTime = 0.f;  // Reset Timer
 	}
 
-	// TODO : Save Tetromino
-	// if (saveTriggered) {
-	//	   sf::RectangleShape* temp = &currentBlock;
-	//     if (saveBlock) {
-	//          *currentBlock = saveBlock;
-	//     }
-	//     saveBlock = *temp;
-	//     currentBlock.setPosition({0,0f, 0,0f})
-
-
 	// if block can't move, stop block
 	if (checkCollisionVertical(1)) {
 		
@@ -189,20 +181,17 @@ void Game::renderTetromino()
 
 bool Game::checkCollisionHorizontal(int dx)
 {
-	// get position
+	// get position and shape
 	sf::Vector2i currentPosition = currentTetromino->getPosition();
-	sf::Vector2i size = currentTetromino->getSize();
+	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
 
 	int newPositionX = currentPosition.x + dx;
 
-
-	if (newPositionX < 0 || newPositionX + size.x >= COLS) {
-		return true;
-	}
-
-	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
-
 	for (int i = 0; i < 4; ++i) {
+		if (newPositionX + shape[i].x < 0 || newPositionX + shape[i].x >= COLS) {
+			return true;
+		}
+
 		if (!board.isEmpty(newPositionX + shape[i].x, currentPosition.y + shape[i].y)) {
 			return true;
 		}
@@ -212,19 +201,18 @@ bool Game::checkCollisionHorizontal(int dx)
 
 bool Game::checkCollisionVertical(int dy)
 {
-	// get position
+	// get position and shape
 	sf::Vector2i currentPosition = currentTetromino->getPosition();
-	sf::Vector2i size = currentTetromino->getSize();
+	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
 
 	int newPositionY = currentPosition.y + dy;
 
-	if (newPositionY + size.y >= ROWS) {
-		return true;
-	}
-
-	std::vector<sf::Vector2i> shape = currentTetromino->getShape();
 
 	for (int i = 0; i < 4; ++i) {
+		if (newPositionY + shape[i].y >= ROWS) {
+			return true;
+		}
+
 		if (!board.isEmpty(currentPosition.x + shape[i].x, newPositionY + shape[i].y)) {
 			return true;
 		}

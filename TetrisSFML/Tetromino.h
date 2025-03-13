@@ -7,14 +7,19 @@ class Tetromino
 {
 public:
     Tetromino(std::vector<sf::Vector2i> s, sf::Color c);
+    void draw(sf::RenderWindow& window);
+    void move(int dx, int dy);
+    void rotate();
     void setPosition(int x, int y);
+
     sf::Vector2i getPosition();
     std::vector<sf::RectangleShape> getBlocks();
     sf::Color getColor();
-    void draw(sf::RenderWindow& window);
     sf::Vector2i getSize();
-    void move(int dx, int dy);
     std::vector<sf::Vector2i> getShape();
+
+private:
+    void updateSize();
 private:
     std::vector<sf::Vector2i> shape;  // 블록을 이루는 셀들의 상대 좌표
     sf::Color color;

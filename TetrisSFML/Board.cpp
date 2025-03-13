@@ -56,6 +56,15 @@ void Board::addBlock(int x, int y, sf::Color color)
 	board[y][x]->setFillColor(color);
 }
 
+void Board::downBlock(int x, int y)
+{
+	if (board[x - 1][y]) {
+		board[x][y] = board[x - 1][y];
+		board[x - 1][y].reset();
+		board[x][y]->setPosition(sf::Vector2f(BLOCK_SIZE * y, BLOCK_SIZE * x));
+	}
+}
+
 void Board::clearLine()
 {
 	int i = ROWS - 1;
@@ -76,7 +85,7 @@ void Board::clearLine()
 			
 			for (int k = i; k > 0; --k) {
 				for (int j = 0; j < COLS; ++j) {
-					board[k][j] = board[k-1][j];
+					downBlock(k, j);
 				}
 			}
 		}
