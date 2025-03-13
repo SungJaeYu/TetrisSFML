@@ -1,1 +1,5 @@
 # TetrisSFML
+
+Tetris
+
+C++ / SFML
